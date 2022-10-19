@@ -116,7 +116,7 @@ campos_ordenados  <-  setdiff(  campos_ordenados,  c( "foto_mes","clase_ternaria
 dataset[  , foto_mes := as.character( foto_mes ) ]
 
 
-periodos_analisis  <- c( 202101, 202102, 202103, 202105 )
+periodos_analisis  <- c( 202003, 202004, 202007, 202008, 202009, 202010, 202011, 202012, 202101, 202102, 202103, 202105 )
 GLOBAL_colores <-  viridis_pal()(length( periodos_analisis ) )
 
 pdf("densidades_orignales.pdf")
