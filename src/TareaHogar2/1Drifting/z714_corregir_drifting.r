@@ -16,9 +16,10 @@ require("data.table")
 kexperimento  <- "DR7141"
 
 kexp_input  <- "CA7060"
+  
+#valores posibles "ninguno" "rank_simple" , "rank_cero_fijo" , "deflacion"
+kmetodo <- "deflacion"
 
-#valores posibles  "ninguno" "rank_simple" , "rank_cero_fijo" , "deflacion"
-kmetodo  <- "deflacion"
 # FIN Parametros del script
 
 
@@ -98,6 +99,42 @@ AgregarVariables  <- function( dataset )
   dataset[ , vmr_mpagominimo         := vm_mpagominimo  / vm_mlimitecompra ]
 
   #Aqui debe usted agregar sus propias nuevas variables
+  dataset[, g_prom_90_mayor_prom_30 := ifelse(
+    (ctrx_quarter_normalizado / 90) > 
+      (rowSums( cbind( catm_trx_other,  ctarjeta_debito_transacciones, cforex_buy, cforex_sell, cpagodeservicios, ctransferencias_emitidas, cextraccion_autoservicio, catm_trx) , na.rm=TRUE )/30),
+    TRUE,
+    FALSE)]
+  dataset[, g_ratio_90_30 := (ctrx_quarter_normalizado / 90) / (rowSums( cbind( catm_trx_other, ctarjeta_debito_transacciones, cforex_buy, cforex_sell, cpagodeservicios, ctransferencias_emitidas, cextraccion_autoservicio, catm_trx) , na.rm=TRUE )/30)]
+  dataset[, g_esta_complicado := ifelse(rowSums( cbind(Master_delinquency,  Visa_delinquency, Master_status, Visa_status, na.rm = TRUE)) > 0, TRUE, FALSE )]
+  dataset[, g_m_saldo_total := rowSums( cbind( mcuentas_saldo,  vm_msaldototal) , na.rm=TRUE ) ]
+  dataset[, g_ctxs_virtuales := rowSums( cbind( chomebanking_transacciones,  cmobile_app_trx) , na.rm=TRUE ) ]
+  dataset[, g_ctxs_remotas := rowSums( cbind( chomebanking_transacciones,  cmobile_app_trx, ccallcenter_transacciones) , na.rm=TRUE ) ]
+  dataset[, g_prop_txs_app :=  ctrx_quarter_normalizado / g_ctxs_virtuales]
+  dataset[, g_es_activo_virtual := ifelse(g_ctxs_virtuales > 5, TRUE, FALSE)]
+  dataset[, g_es_activo_remoto := ifelse(g_ctxs_remotas > 5, TRUE, FALSE)]
+  dataset[, g_usa_pago_mis_cuentas := ifelse(cpagomiscuentas > 0, TRUE, FALSE)]
+  dataset[, g_promedio_mensual_quarter := ctrx_quarter_normalizado /3]
+  dataset[, g_cobra_salario := rowSums( cbind( mpayroll,  mpayroll2) , na.rm=TRUE ) ]
+  dataset[, g_tiene_prestamos := rowSums( cbind( mpayroll,  mpayroll2) , na.rm=TRUE ) ]
+  dataset[, g_tiene_inversiones := ifelse(rowSums( cbind( cinversion1,  cinversion2) , na.rm=TRUE ) > 0, TRUE, FALSE) ]
+  dataset[, g_posee_prestamos := ifelse(rowSums( cbind( cprestamos_personales,  cprestamos_prendarios, cprestamos_hipotecarios) , na.rm=TRUE ) > 0, TRUE, FALSE) ]
+  dataset[, g_tiene_saldos_negativos := ifelse(pmin(mcaja_ahorro, mcaja_ahorro_adicional, mcaja_ahorro_dolares, mcuenta_corriente, mcuenta_corriente_adicional, na.rm=TRUE) < 0, TRUE, FALSE)]
+  dataset[, g_na_count := rowSums(is.na(dataset))]
+  dataset[, g_cliente_porcentaje_vida_adulta := cliente_antiguedad / (cliente_edad-18) ]
+  dataset[, g_m_mpayrolls_sobre_edad  := rowSums( cbind( mpayroll,  mpayroll2) , na.rm=TRUE ) / cliente_edad ]
+  dataset[, g_m_mpayroll2_sobre_edad  := mpayroll2 / cliente_edad ]
+  dataset[, g_cpayrolls_sobre_edad  := rowSums( cbind( cpayroll_trx,  cpayroll2_trx) , na.rm=TRUE ) / cliente_edad ]
+  dataset[, g_m_monto_inversiones_totales := rowSums( cbind( minversion1_pesos,  minversion2) , na.rm=TRUE )]
+  dataset[, g_cantidad_inversiones_totales := rowSums( cbind( cinversion1,  cinversion2) , na.rm=TRUE )]
+  dataset[, g_m_monto_inversiones_sobre_saldo := g_m_monto_inversiones_totales / g_m_saldo_total]
+  dataset[, g_cantidad_inversiones_sobre_saldo := g_cantidad_inversiones_totales / g_m_saldo_total]
+  dataset[, g_m_monto_promedio_por_inversion := g_m_monto_inversiones_totales / g_cantidad_inversiones_totales]
+  dataset[, g_ratio_rentabilidad_mensual_sobre_anual := mrentabilidad / mrentabilidad_annual]
+  dataset[, g_m_rentabilidad_historica := rowSums( cbind( mactivos_margen,  mpasivos_margen) , na.rm=TRUE )]
+  dataset[, g_ratio_rentabilidad_anual_sobre_historica := mrentabilidad_annual / g_m_rentabilidad_historica]
+  dataset[, g_m_rentabilidad_mensual_versus_promedio_rentabilidad_anual :=  rowSums( cbind( -mrentabilidad,  mrentabilidad_annual/12) , na.rm=TRUE )]
+  dataset[, g_m_rentabilidad_mensual_versus_promedio_rentabilidad_historica :=  rowSums( cbind( -mrentabilidad,  g_m_rentabilidad_historica/cliente_antiguedad) , na.rm=TRUE )]
+  
 
   #valvula de seguridad para evitar valores infinitos
   #paso los infinitos a NULOS
@@ -207,7 +244,7 @@ setorder( dataset, foto_mes, numero_de_cliente )
 
 #por como armé los nombres de campos, estos son los campos que expresan variables monetarias
 campos_monetarios  <- colnames(dataset)
-campos_monetarios  <- campos_monetarios[campos_monetarios %like% "^(m|Visa_m|Master_m|vm_m)"]
+campos_monetarios  <- campos_monetarios[campos_monetarios %like% "^(m|Visa_m|Master_m|vm_m|g_m_)"]
 
 #aqui aplico un metodo para atacar el data drifting
 #hay que probar experimentalmente cual funciona mejor
