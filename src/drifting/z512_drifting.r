@@ -8,10 +8,10 @@ require("rpart.plot")
 
 
 #Aqui se debe poner la carpeta de la materia de SU computadora local
-setwd("~/buckets/b1/")  #Establezco el Working Directory
+setwd("/home/devsar/Documents/Austral/Laboratorio de Implementación")  #Establezco el Working Directory
 
 #cargo el dataset de la competencia 2  , que tiene lo que paso en 202103
-dataset  <- fread("./datasets/competencia2_2022.csv.gz")  #donde entreno
+dataset  <- fread("./datasets/competencia1_2022.csv")  #donde entreno
 dataset  <- dataset[  foto_mes %in% c( 202101, 202103 ) ]
 
 #creo la clase_binaria SI={ BAJA+1, BAJA+2 }    NO={ CONTINUA }
