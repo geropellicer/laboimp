@@ -21,7 +21,7 @@ ksemillerio  <- 50
 kmodelos  <- 2
 # FIN Parametros del script
 
-ksemilla_primos  <- 102191  #reemplazar por la propia semilla
+ksemilla_primos  <- 700027  #reemplazar por la propia semilla
 
 #------------------------------------------------------------------------------
 options(error = function() { 
