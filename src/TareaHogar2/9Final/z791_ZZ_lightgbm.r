@@ -19,7 +19,7 @@ kexp_input  <- "HT7412"
 kmodelos  <- 2
 # FIN Parametros del script
 
-ksemilla  <- 102191
+ksemilla  <- 700027
 
 #------------------------------------------------------------------------------
 options(error = function() { 
