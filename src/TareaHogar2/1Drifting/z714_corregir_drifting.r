@@ -160,12 +160,57 @@ AgregarVariables  <- function( dataset )
   }
 
 }
+
+#------------------------------------------------------------------------------
+#corrige drift por Dolarización
+
+drift_dolarizacion  <- function( campos_monetarios )
+{
+  # Me aseguro que los "Campos monetarios" son los que estoy esperando imprimiendolos
+  for( campo in campos_monetarios )
+  {
+    cat( campo, " " )
+  }
+
+  vfoto_mes <- c( 201901, 201902, 201903, 201904, 201905, 201906,
+                  201907, 201908, 201909, 201910, 201911, 201912,
+                  202001, 202002, 202003, 202004, 202005, 202006,
+                  202007, 202008, 202009, 202010, 202011, 202012,
+                  202101, 202102, 202103, 202104, 202105 )
+
+  # El valor del dólar de cada mes está calculado de la siguiente manera: 
+  # por cada día de cotización disponible en https://www.ambito.com/contenidos/dolar-informal-historico.html
+  # entre el 1 de enero y el 31 de mayo de 2021, se agrupan por mes y se calcula el promedio de los valores
+  # de todos los días del mes, tanto compra como venta. 
+  vDolar <- c( 38.051, 37.778, 40.982, 43.747, 45.409, 44.313, 
+               43.233, 53.414, 59.220, 64.136, 65.250, 70.237, 
+               75.295, 76.192, 80.276, 97.413, 121.237, 120.857, 
+               126.978, 131.040, 135.364, 167.619, 157.400, 150.053, 
+               155.150, 147.000, 141.115, 143.750, 150.763 )
+
+  tb_IPC  <- data.table( "foto_mes"= vfoto_mes,
+                         "dolar" = vDolar )
+
+  dataset[ tb_IPC,
+           on= c("foto_mes"),
+           (campos_monetarios) :=  .SD / i.dolar ,
+           .SDcols = campos_monetarios ]
+
+}
+
+
 #------------------------------------------------------------------------------
 #deflaciona por IPC
 #momento 1.0  31-dic-2020 a las 23:59
 
 drift_deflacion  <- function( campos_monetarios )
 {
+  # Me aseguro que los "Campos monetarios" son los que estoy esperando imprimiendolos
+  for( campo in campos_monetarios )
+  {
+    cat( campo, " " )
+  }
+
   vfoto_mes <- c( 201901, 201902, 201903, 201904, 201905, 201906,
                   201907, 201908, 201909, 201910, 201911, 201912,
                   202001, 202002, 202003, 202004, 202005, 202006,
@@ -253,7 +298,8 @@ kmetodo,
   "ninguno"        = cat( "No hay correccion del data drifting" ),
   "rank_simple"    = drift_rank_simple( campos_monetarios ),
   "rank_cero_fijo" = drift_rank_cero_fijo( campos_monetarios ),
-  "deflacion"      = drift_deflacion( campos_monetarios ) 
+  "deflacion"      = drift_deflacion( campos_monetarios ),
+  "dolarizacion"   = drift_dolarizacion( campos_monetarios ) 
 )
 
 
