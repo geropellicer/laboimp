@@ -188,10 +188,10 @@ drift_dolarizacion  <- function( campos_monetarios )
                126.978, 131.040, 135.364, 167.619, 157.400, 150.053, 
                155.150, 147.000, 141.115, 143.750, 150.763 )
 
-  tb_IPC  <- data.table( "foto_mes"= vfoto_mes,
+  tb_dolar  <- data.table( "foto_mes"= vfoto_mes,
                          "dolar" = vDolar )
 
-  dataset[ tb_IPC,
+  dataset[ tb_dolar,
            on= c("foto_mes"),
            (campos_monetarios) :=  .SD / i.dolar ,
            .SDcols = campos_monetarios ]
@@ -299,7 +299,7 @@ kmetodo,
   "rank_simple"    = drift_rank_simple( campos_monetarios ),
   "rank_cero_fijo" = drift_rank_cero_fijo( campos_monetarios ),
   "deflacion"      = drift_deflacion( campos_monetarios ),
-  "dolarizacion"   = drift_dolarizacion( campos_monetarios ) 
+  "dolarizacion"   = drift_dolarizacion( campos_monetarios ) # se agrega esta linea y la coma final de la linea anterior
 )
 
 
